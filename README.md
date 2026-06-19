@@ -1,108 +1,62 @@
+# Biomarker Discovery & Multi-Stage Bioinformatics Pipeline
 
-#Biomarker Discovery and Machine Learning Pipeline
-A modular, data-driven bioinformatics pipeline designed to detect transcriptomic biomarkers and prioritize diagnostic candidates for Endometriosis using Differential Expression Analysis (DEA), Functional Enrichment Analysis, and Machine Learning.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/INXS-03/pipeline_biomarqueurs.py/blob/main/pipeline_biomarqueurs_py.ipynb)
 
-The pipeline handles multiple transcriptomic datasets (such as D1: GSE153739 and D2: GSE279835), performs high-throughput filtering, discovers functional targets across public pathway databases, and prepares standardized matrices optimized for training classifier models.
+An advanced, end-to-end transcriptomic data analysis pipeline designed to process Differential Expression Analysis (DEA) datasets, execute multi-database functional enrichment, integrate cross-cohort matrices for machine learning, rank features, and perform comprehensive gene annotation.
 
-🧬 Pipeline Architecture & Features
-🔹 Step 1 — Functional Enrichment Analysis
-Automated Data Cleaning & Filtering: Parses differential expression inputs applying dynamic statistical cutoffs (P 
-adj
-​
- <0.05, ∣log 
-2
-​
- (FC)∣>1.0).
+### Pipeline Architecture (The 6 Stages)
 
-Gene List Exportation: Automatically isolates and extracts segmented up-regulated, down-regulated, and global Differentially Expressed Gene (DEG) lists.
+This repository implements a modular 6-stage architecture that seamlessly transitions from raw transcriptomic study data to fully annotated, prioritized biomarker panels:
 
-Multi-Database Over-Representation Analysis (ORA): Seamlessly interrogates 6 benchmark biological databases via gseapy:
+### Étape 1: Functional Enrichment Analysis (ORA)
+* **Filtering & Thresholding**: Extracts significantly altered features from multi-cohort datasets (e.g., `D1` and `D2`) using user-defined metrics ($P_{adj} < 0.05$ and $|\log_2(FC)| > 1.0$).
+* **Over-Representation Analysis (ORA)**: Leverages `gseapy` to systematically scan 6 target databases: **KEGG**, **Reactome**, **WikiPathways**, and **Gene Ontology (BP, MF, CC)**.
+* **Outputs**: Automates creation of volcano plots, up/down-regulated gene isolation lists, and comparative pathway enrichment bar plots.
 
-Gene Ontology (Biological Process, Molecular Function, Cellular Component)
+### Étape 2: Preprocessing & Fusion for Machine Learning
+* **Data Integration**: Integrates normalized counts matrices across distinct platforms and synchronization targets.
+* **Feature Harmonization**: Filters global feature matrices down to match the validated DEGs from Stage 1.
+* **Data Splitting & Scaling**: Handles Z-score normalization (`StandardScaler`) and outputs balanced, stratified train-test subsets (`train_X.csv`, `test_X.csv`, etc.).
+* **Dimensionality Controls**: Renders exploratory Principal Component Analysis (PCA) scatter diagrams and top feature cluster heatmaps.
 
-KEGG Pathways
+### Étape 3: Signature Extraction & Venn Cohort Intersection
+* **Meta-Analysis Intersections**: Computes overlapping genomic profiles across multiple datasets ($D1 \cap D2$).
+* **Robust Core Signature Extraction**: Minimizes cohort-specific batch artifacts by isolating strict consensus target spaces shared universally across your validation samples.
 
-Reactome Pathway Knowledgebase
+### Étape 4: Biomarker Prioritization & Ranking
+* **Feature Importance Evaluation**: Leverages integrated ranking mechanisms (such as statistical scores or ensemble model weights) to order candidates.
+* **Metric Sorting**: Groups markers by magnitude of expression change alongside statistical reliability metrics to prioritize top-tier candidates.
 
-WikiPathways
+### Étape 5: Multi-Database Functional Querying
+* **Custom Cross-Database Profiling**: Re-evaluates prioritized candidates against deep functional databases to discover niche biochemical mechanisms.
+* **Target Pathways Clustering**: Links the prioritized subset specifically to targeted cellular pathways or disease phenotypes.
 
-Automated Visualizations: Generates customized volcano plots identifying elite targets along with comparative publication-ready barplots highlighting −log 
-10
-​
- (P 
-adj
-​
- ) pathways.
+### Étape 6: Advanced Biomarker Annotation & Final Export
+* **Gene Biotype & Chromosome Mapping**: Enriches target gene symbols with comprehensive genomic context (e.g., identifying protein-coding sequences, lncRNAs, and precise chromosomal map locations).
+* **Automated Visual Reports**: Generates distribution statistics of biotypes, chromosomal distribution charts, and a publication-ready visual summary table of the top prioritized biomarkers.
+* **Final Curated Deliverables**: Automatically exports the definitive biomarker configurations (`biomarqueurs_finaux_annotes.csv` and an isolated text list of symbols).
 
-Cross-Dataset Meta-Analysis: Computes intersections (D1∩D2) to isolate high-confidence biological signatures shared across cohorts.
+### Repository File Structure
 
-🔹 Step 2 — ML Data Preprocessing & Fusion
-Cross-Cohort Matrix Integration: Fuses normalized count matrices from multiple platforms into a unified analytical matrix.
+The workspace isolates steps systematically under a structured `resultats/` tree directory:
 
-Feature Filtering: Syncs common features matching the validated DEGs discovered during Step 1.
-
-Advanced Normalization: Applies Z-score standardization using robust StandardScaler mechanisms.
-
-Stratified Splitting: Generates partitioned Train/Test subsets maintaining categorical disease/control class distribution balances.
-
-Dimensionality Assessment: Evaluates feature distributions through automated Principal Component Analysis (PCA) and high-density clustering Heatmaps.
-
-📂 Repository File Structure
-The project dynamically generates standard-compliant outputs organized under a clean resultats/ tree structure:
-
-Plaintext
-├── pipeline_biomarqueurs_py.ipynb    # Main execution Jupyter Notebook
-├── D1.csv                            # DEA metrics file for Dataset 1 (GSE153739)
-├── D2.csv                            # DEA metrics file for Dataset 2 (GSE279835)
-├── normalized_counts_D1.csv          # Matrix for D1 samples
-├── normalized_counts_D2.csv          # Matrix for D2 samples
+```text
+├── pipeline_biomarqueurs_py.ipynb     # Main execution Jupyter Notebook
+├── D1.csv                             # DEA results for Cohort 1
+├── D2.csv                             # DEA results for Cohort 2
+├── normalized_counts_D1.csv           # Expression matrix for Cohort 1
+├── normalized_counts_D2.csv           # Expression matrix for Cohort 2
 │
-└── resultats/
-    ├── etape1/                       # Step 1 Analytics
-    │   ├── figures/                  # D1_volcano.png, D2_volcano.png, barplots
-    │   ├── tables/                   # Filtered enrichments (.csv)
-    │   └── *.txt                     # SEGMENTED Gene Lists (All, UP, DOWN)
-    │
-    └── etape2/                       # Step 2 ML Matrix Analytics
-        ├── figures/                  # pca_plot.png, heatmap_top50.png
-        ├── tables/                   # train_X.csv, test_X.csv, train_y.csv, test_y.csv
-        └── data_ml.pkl               # Pickled data object ready for modeling
-🛠️ Installation & Prerequisites
-This pipeline is built on Python 3.10+ and relies heavily on scientific computing and bioinformatics packages.
-
-1. Local Environment Setup
-Clone this repository and install all required dependencies:
-
-Bash
-git clone https://github.com/INXS-03/pipeline_biomarqueurs.py.git
-cd pipeline_biomarqueurs.py
-pip install pandas numpy matplotlib seaborn scikit-learn scipy gseapy openpyxl
-2. Expected Data Format
-Your raw differential expression inputs (D1.csv, D2.csv) must be semi-colon (;) separated tables featuring the following header structure:
-
-Extrait de code
-GeneID;Base mean;log2(FC);StdErr;Wald-Stats;P-value;P-adj;Chromosome;Start;End;Strand;Feature;Gene symbol
-🚀 Usage
-Place your target file arrays (D1.csv, D2.csv, normalized_counts_D1.csv, normalized_counts_D2.csv) straight into the root repository directory.
-
-Open the notebook in a terminal or inside standard Jupyter environments:
-
-Bash
-jupyter notebook pipeline_biomarqueurs_py.ipynb
-Adjust path configurations inside the configuration cells if your file titles vary from defaults:
-
-Python
-D1_PATH = "D1.csv"
-D2_PATH = "D2.csv"
-SEP     = ";"
-Click Run All cells. Check the runtime logs inside standard streams to monitor progress and find visual metrics stored automatically in your resultats/ directory.
-
-📊 Sample Visual Analytics Expected
-Volcano Plots: Highlighting up-regulated target candidates in red, down-regulated elements in blue, and low-priority ones in grey.
-
-Enrichment Histograms: Horizontal bar diagrams rank-ordering pathways based on strict statistical confidence measures.
-
-PCA Components Mapping: Dimensional clustering analysis checking for platform batch variances or biological sample separations.
-
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+└── resultats/                         # Automated Output Vault
+    ├── etape1/                        # DEA Filtering & ORA Pathways
+    │   ├── figures/                   # Volcano plots, Enrichments barplots
+    │   └── tables/                    # Comprehensive csv pathway sheets
+    ├── etape2/                        # ML Preprocessing matrices
+    │   ├── figures/                   # PCA variance plots, Cluster Heatmaps
+    │   └── tables/                    # train_X, test_X, train_y, test_y data splits
+    ├── etape3/                        # Intersection analysis & Core panels
+    ├── etape4/                        # Ranked feature sets & priority scores
+    ├── etape5/                        # Target-specific database query profiles
+    └── etape6/                        # Advanced Annotations (Final Stage)
+        ├── figures/                   # biomarqueurs_biotypes.png, biomarqueurs_chromosomes.png
+        └── tables/                    # biomarqueurs_finaux_annotes.csv, liste_symboles_biomarqueurs.txt
